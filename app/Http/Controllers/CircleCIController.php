@@ -10,31 +10,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CircleCIController extends Controller
 {
-//    public function getAllNotifications()
-//    : JsonResponse {
-//
-//        return response()->json(WebhookNotification::all());
-//    }
+    public function getAllNotifications()
+    : JsonResponse {
 
-//    public function handleNotification(Request $request)
-//    : JsonResponse {
-//
-//        return response()->json([$request->headers->all(), $request->all()]);
-
-//        CircleCINotificationHelper::handle($request);
-//
-//        return response()
-//            ->json(null, Response::HTTP_NO_CONTENT);
-//    }
-
-
-    public function handleNotification(Request $request)
-    {
-        return response()->json(['message' => 'POST received!']);
+        return response()->json(WebhookNotification::all());
     }
 
-    public function getAllNotifications()
-    {
-        return response()->json(['message' => 'GET request received!']);
+    public function handleNotification(Request $request)
+    : JsonResponse {
+
+        CircleCINotificationHelper::handle($request);
+
+        return response()
+            ->json(null, Response::HTTP_NO_CONTENT);
     }
 }
