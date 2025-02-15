@@ -52,41 +52,59 @@ class CircleCINotificationHelper {
         $webhookNotification->save();
     }
 
-    private static function validate(?string $signature, string $requestContent): void
-    {
-        if (!$signature) {
-            abort(Response::HTTP_BAD_REQUEST, 'Missing Circleci-Signature header');
-        }
+    private static function validate(string $signature, string $requestContent)
+    : void {
 
-        // Extract the hash value after "sha256="
-        $receivedSignatureParts = explode('=', $signature);
-        if (count($receivedSignatureParts) !== 2) {
-            abort(Response::HTTP_UNAUTHORIZED, 'Invalid Signature Format');
-        }
+        $receivedSignature = explode('=', $signature)[1];
 
-        $receivedSignature = $receivedSignatureParts[1];
+        $generatedSignature = hash_hmac(
+            'sha256',
+            $requestContent,
+            env('CIRCLE_CI_WEBHOOK_SECRET')
+        );
 
-        // Get the secret from .env
-        $secret = env('CIRCLE_CI_WEBHOOK_SECRET');
-        if (!$secret) {
-            abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'Webhook secret not set in environment');
-        }
-
-        // Generate the HMAC signature
-        $generatedSignature = hash_hmac('sha256', $requestContent, $secret);
-
-        // Log both received and generated signatures for debugging
-        \Log::info('Received Signature: ' . $receivedSignature);
-        \Log::info('Generated Signature: ' . $generatedSignature);
-        \Log::info('Raw Request Content: ' . $requestContent);
-
-        // Verify the signature
         abort_if(
-            !hash_equals($generatedSignature, $receivedSignature),
+            $receivedSignature !== $generatedSignature,
             Response::HTTP_UNAUTHORIZED,
             'Invalid Signature Provided'
         );
     }
+
+//    private static function validate(?string $signature, string $requestContent): void
+//    {
+//        if (!$signature) {
+//            abort(Response::HTTP_BAD_REQUEST, 'Missing Circleci-Signature header');
+//        }
+//
+//        // Extract the hash value after "sha256="
+//        $receivedSignatureParts = explode('=', $signature);
+//        if (count($receivedSignatureParts) !== 2) {
+//            abort(Response::HTTP_UNAUTHORIZED, 'Invalid Signature Format');
+//        }
+//
+//        $receivedSignature = $receivedSignatureParts[1];
+//
+//        // Get the secret from .env
+//        $secret = env('CIRCLE_CI_WEBHOOK_SECRET');
+//        if (!$secret) {
+//            abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'Webhook secret not set in environment');
+//        }
+//
+//        // Generate the HMAC signature
+//        $generatedSignature = hash_hmac('sha256', $requestContent, $secret);
+//
+//        // Log both received and generated signatures for debugging
+//        \Log::info('Received Signature: ' . $receivedSignature);
+//        \Log::info('Generated Signature: ' . $generatedSignature);
+//        \Log::info('Raw Request Content: ' . $requestContent);
+//
+//        // Verify the signature
+//        abort_if(
+//            !hash_equals($generatedSignature, $receivedSignature),
+//            Response::HTTP_UNAUTHORIZED,
+//            'Invalid Signature Provided'
+//        );
+//    }
 
 
 //    private static function validate(string $signature, string $requestContent)

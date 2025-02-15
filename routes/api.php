@@ -10,3 +10,8 @@ Route::get('/user', function (Request $request) {
 
 Route::post('circleci', [CircleCIController::class, 'handleNotification']);
 Route::get('circleci', [CircleCIController::class, 'getAllNotifications']);
+
+
+Route::post('/test', function (Request $request) {
+    return response()->json(['message' => 'POST request received!']);
+});
